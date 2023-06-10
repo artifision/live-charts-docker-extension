@@ -1,0 +1,10 @@
+{
+  "icon": "docker.svg",
+  "ui": {
+    "dashboard-tab": {
+      "title": "Live Charts",
+      "src": "index.html",
+      "root": "ui"
+    }
+  }
+}
