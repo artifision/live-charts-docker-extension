@@ -19,7 +19,7 @@ LABEL org.opencontainers.image.title="Live Charts" \
     com.docker.desktop.extension.icon="https://raw.githubusercontent.com/artifision/live-charts-docker-extension/main/ui/public/logo.png" \
     com.docker.extension.detailed-description="Live Charts provides real-time visualization of critical system metrics. With Live Charts, you can effortlessly monitor and track the current usage of CPU, Memory, Disk, and Network resources within your Docker containers. The extension offers intuitive and interactive charts that dynamically update to reflect the most recent data, enabling you to make informed decisions and optimize your containerized environment. Stay on top of your system's performance with Live Charts and gain valuable insights into resource utilization, empowering you to efficiently manage your Docker infrastructure." \
     com.docker.extension.publisher-url="https://artifision.com" \
-    com.docker.extension.additional-urls='[{"title":"GitHub","url":"https://github.com/artifision/live-charts-docker-extension"}, {"title":"Docker Hub","url":"https://hub.docker.com/artifision/live-charts-docker-extension"}]' \
+    com.docker.extension.additional-urls='[{"title":"GitHub","url":"https://github.com/artifision/live-charts-docker-extension"}, {"title":"Docker Hub","url":"https://hub.docker.com/r/artifision/live-charts-docker-extension"}]' \
     com.docker.extension.categories="tools,utility-tools" \
     com.docker.extension.changelog="This is the first release of the extension."
 
