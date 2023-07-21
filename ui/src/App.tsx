@@ -73,7 +73,7 @@ export function App() {
       });
       runningContainers.orderByName();
       setRunningContainers(runningContainers);
-      setSelectedContainers(selectedContainers.removeContainersNotIn(runningContainers));
+      setSelectedContainers((selectedContainers: ContainersCollection) => selectedContainers.removeContainersNotIn(runningContainers));
     });
   }
 
@@ -258,13 +258,14 @@ export function App() {
   const handleContainerSelectChange = (event: React.SyntheticEvent, checked: boolean): void => {
     const selectedContainerID = (event.target as HTMLInputElement).value;
 
-    if (checked) {
-      selectedContainers.addContainer(runningContainers.getContainerById(selectedContainerID));
-    } else {
-      selectedContainers.removeContainerByID(selectedContainerID);
-    }
-
-    setSelectedContainers(selectedContainers);
+    setSelectedContainers((selectedContainers: ContainersCollection) => {
+      if (checked) {
+        selectedContainers.addContainer(runningContainers.getContainerById(selectedContainerID));
+      } else {
+        selectedContainers.removeContainerByID(selectedContainerID);
+      }
+      return selectedContainers;
+    });
   }
 
   return (
