@@ -7,6 +7,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import FormControl from '@mui/material/FormControl';
 import Radio from '@mui/material/Radio';
+import Tooltip from '@mui/material/Tooltip';
 import RadioGroup from '@mui/material/RadioGroup';
 import Box from '@mui/material/Box';
 import {blue, teal, deepPurple, lime, blueGrey} from '@mui/material/colors';
@@ -344,19 +345,20 @@ export function App() {
             <Divider/>
             <FormGroup>
               {runningContainers?.map((container: Container) =>
-                <FormControlLabel
-                  sx={{marginLeft: '-12px'}}
-                  key={container.ID}
-                  value={container.ID}
-                  control={<Switch checked={selectedContainers.containsContainer(container)} size="small"/>}
-                  label={<Typography sx={{
-                    width: '150px',
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                  }}>{container.getName()}</Typography>}
-                  onChange={handleContainerSelectChange}
-                />
+                <Tooltip key={container.ID} title={container.getName()} placement="right">
+                  <FormControlLabel
+                    sx={{marginLeft: '-12px'}}
+                    value={container.ID}
+                    control={<Switch checked={selectedContainers.containsContainer(container)} size="small"/>}
+                    label={<Typography sx={{
+                      width: '150px',
+                      textOverflow: 'ellipsis',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                    }}>{container.getName()}</Typography>}
+                    onChange={handleContainerSelectChange}
+                  />
+                </Tooltip>
               )}
               {!runningContainers.hasContainers() &&
                 <FormLabel>No Containers Running.</FormLabel>
