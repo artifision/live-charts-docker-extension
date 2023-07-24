@@ -39,6 +39,10 @@ const graphMergeOptions = [
 const MAX_CHARTS: number = 12;
 const MAX_CONSECUTIVE_FAILED_READS: number = 20;
 const MAX_STACK_ITEMS: number = 60;
+const SIDEBAR_MIN_WIDTH = 170;
+const SIDEBAR_MAX_WIDTH = 500;
+const SIDEBAR_DEFAULT_WIDTH = 250;
+const SIDEBAR_WIDTH_KEY = 'dlc_sidebar_width';
 
 // Note: This line relies on Docker Desktop's presence as a host application.
 // If you're running this React app in a browser, it won't work properly.
@@ -58,6 +62,8 @@ export function App() {
   const [statsInterval, setStatsInterval] = useState<number>(1000);
   const [selectedAllContainers, setSelectedAllContainers] = useState<boolean>(false);
   const [selectedGraphMergeOption, setSelectedGraphMergeOption] = useState<string>(graphMergeOptions[0].value);
+  const [resizeStarted, setResizeStarted] = useState<boolean>(false);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY)) || SIDEBAR_DEFAULT_WIDTH);
   const currentStatsRawRef = useRef<RawContainerStats[]>();
   const ddClient = useDockerDesktopClient();
   const theme = useTheme();
@@ -269,8 +275,31 @@ export function App() {
     });
   }
 
+  const resizeSidebar = (event: React.MouseEvent): void => {
+    if (!resizeStarted) {
+      return;
+    }
+    setSidebarWidth(previousWidth => {
+      let newWidth: number = previousWidth + event.movementX;
+      if (newWidth < SIDEBAR_MIN_WIDTH) {
+        newWidth = SIDEBAR_MIN_WIDTH;
+      } else if (newWidth > SIDEBAR_MAX_WIDTH) {
+        newWidth = SIDEBAR_MAX_WIDTH;
+      }
+
+      localStorage.setItem('dlc_sidebar_width', newWidth.toString());
+
+      return newWidth;
+    });
+  }
+
   return (
-    <Stack spacing={1}>
+    <Stack spacing={1}
+           onMouseUp={() => setResizeStarted(false)}
+           onMouseLeave={() => setResizeStarted(false)}
+           onMouseMove={resizeSidebar}
+           sx={{userSelect: 'none'}}
+    >
       <Stack
         direction="row"
         alignItems="center"
@@ -320,6 +349,7 @@ export function App() {
         <Stack
           spacing={4}
           sx={{
+            width: sidebarWidth,
             flexShrink: 0,
             backgroundColor: theme.palette.mode === 'dark' ? blueGrey[900] : blueGrey[50],
             border: '1px solid',
@@ -347,15 +377,17 @@ export function App() {
               {runningContainers?.map((container: Container) =>
                 <Tooltip key={container.ID} title={container.getName()} placement="right">
                   <FormControlLabel
-                    sx={{marginLeft: '-12px'}}
+                    sx={{marginLeft: '-12px', marginRight: 0}}
                     value={container.ID}
                     control={<Switch checked={selectedContainers.containsContainer(container)} size="small"/>}
-                    label={<Typography sx={{
-                      width: '150px',
+                    label={<Typography
+                    sx={{
+                      width: sidebarWidth - 80,
                       textOverflow: 'ellipsis',
                       overflow: 'hidden',
                       whiteSpace: 'nowrap',
-                    }}>{container.getName()}</Typography>}
+                    }}
+                    >{container.getName()}</Typography>}
                     onChange={handleContainerSelectChange}
                   />
                 </Tooltip>
@@ -366,6 +398,21 @@ export function App() {
             </FormGroup>
           </FormControl>
         </Stack>
+
+        <Stack sx={{marginLeft: '-8px', cursor: 'col-resize'}} onMouseDown={() => setResizeStarted(true)}>
+          <Box sx={{
+            borderRight: '2px solid',
+            flexGrow: 1,
+            borderRadius: 10,
+            width: '9px',
+            borderColor: theme.palette.mode === 'dark' ? blueGrey[800] : blueGrey[100],
+            '&:hover': {
+              borderColor: theme.palette.mode === 'dark' ? blueGrey[600] : blueGrey[300],
+            }
+          }}>
+          </Box>
+        </Stack>
+
         <Stack sx={{flexGrow: 1, width: '1px'}}>
           {runningContainers.hasContainers() && charts.map((chart: any) =>
             <Box key={chart.key} sx={{minHeight: '200px'}}>{chart.chart}</Box>
