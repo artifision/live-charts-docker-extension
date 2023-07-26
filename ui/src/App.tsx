@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {createDockerDesktopClient} from '@docker/extension-api-client';
-import {Divider, FormLabel, Link, Stack, Typography, useTheme} from '@mui/material';
+import {debounce, Divider, FormLabel, Link, Stack, TextField, Typography, useTheme} from '@mui/material';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -43,6 +43,7 @@ const SIDEBAR_MIN_WIDTH = 170;
 const SIDEBAR_MAX_WIDTH = 500;
 const SIDEBAR_DEFAULT_WIDTH = 250;
 const SIDEBAR_WIDTH_KEY = 'dlc_sidebar_width';
+const CONTAINERS_FILTER_KEY = 'dlc_containers_filter';
 
 // Note: This line relies on Docker Desktop's presence as a host application.
 // If you're running this React app in a browser, it won't work properly.
@@ -54,16 +55,19 @@ function useDockerDesktopClient() {
 
 export function App() {
   const [runningContainers, setRunningContainers] = useState<ContainersCollection>(new ContainersCollection);
+  const [filteredContainers, setFilteredContainers] = useState<ContainersCollection>(new ContainersCollection);
   const [selectedContainers, setSelectedContainers] = useState<ContainersCollection>(new ContainersCollection);
   const [selectedDevices, setSelectedDevices] = useState<Device[]>(devices);
   const [statsStack, setStatsStack] = useState<StatsStack>(new StatsStack(MAX_STACK_ITEMS));
   const [charts, setCharts] = useState<Object[]>([]);
   const [maxChartsWarningShown, setMaxChartsWarningShown] = useState<boolean>(false);
   const [statsInterval, setStatsInterval] = useState<number>(1000);
-  const [selectedAllContainers, setSelectedAllContainers] = useState<boolean>(false);
   const [selectedGraphMergeOption, setSelectedGraphMergeOption] = useState<string>(graphMergeOptions[0].value);
   const [resizeStarted, setResizeStarted] = useState<boolean>(false);
   const [sidebarWidth, setSidebarWidth] = useState<number>(parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY)) || SIDEBAR_DEFAULT_WIDTH);
+  const containersFilterDefaultValue = localStorage.getItem(CONTAINERS_FILTER_KEY) || '';
+  const [containersFilter, setContainersFilter] = useState<string>(containersFilterDefaultValue);
+  const [invalidFilter, setInvalidFilter] = useState<boolean>(false);
   const currentStatsRawRef = useRef<RawContainerStats[]>();
   const ddClient = useDockerDesktopClient();
   const theme = useTheme();
@@ -80,24 +84,35 @@ export function App() {
       });
       runningContainers.orderByName();
       setRunningContainers(runningContainers);
-      setSelectedContainers((selectedContainers: ContainersCollection) => selectedContainers.removeContainersNotIn(runningContainers));
     });
   }
 
   useEffect(() => {
-    if (selectedAllContainers || !runningContainers.hasContainers()) {
+    if (!runningContainers.hasContainers()) {
+      setFilteredContainers(new ContainersCollection);
+      setSelectedContainers(new ContainersCollection);
       return;
     }
-    setSelectedAllContainers(true);
-    if (runningContainers.hasContainers()) {
-      const selectedContainers = new ContainersCollection
-      runningContainers.getContainers().map((container: Container) => {
-        selectedContainers.addContainer(container);
+
+    const filteredContainers = new ContainersCollection
+    runningContainers.getContainers().map((container: Container) => {
+      if (container.getName().match(containersFilter)) {
+        filteredContainers.addContainer(container);
+      }
+    });
+
+    setSelectedContainers((previouslySelectedContainers: ContainersCollection) => {
+      const newSelectedContainers: ContainersCollection = new ContainersCollection;
+      filteredContainers.map((container: Container) => {
+        if (!previouslySelectedContainers.hasContainers() || previouslySelectedContainers.containsContainer(container)) {
+          newSelectedContainers.addContainer(container);
+        }
       });
 
-      setSelectedContainers(selectedContainers);
-    }
-  }, [runningContainers])
+      return newSelectedContainers;
+    });
+    setFilteredContainers(filteredContainers);
+  }, [runningContainers, containersFilter]);
 
   const makeStatsFromRaw = (rawStats: Array<RawContainerStats>): Stats => {
     const currentTime: string = new Date().toLocaleTimeString([], {
@@ -293,6 +308,18 @@ export function App() {
     });
   }
 
+  const handleFilterChange = debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      new RegExp(event.target.value);
+    } catch(e) {
+      setInvalidFilter(true);
+      return;
+    }
+    setInvalidFilter(false);
+    setContainersFilter(event.target.value);
+    localStorage.setItem(CONTAINERS_FILTER_KEY, event.target.value);
+  }, 1000);
+
   return (
     <Stack spacing={1}
            onMouseUp={() => setResizeStarted(false)}
@@ -373,8 +400,12 @@ export function App() {
           <FormControl>
             <Typography variant="h4">Containers:</Typography>
             <Divider/>
+            <TextField label="Filter (RegExp)" sx={{marginBottom: 1}} error={invalidFilter} helperText={invalidFilter ? 'Invalid RegExp' : ''}
+                       InputProps={{startAdornment: '/', endAdornment: '/'}} defaultValue={containersFilterDefaultValue}
+                       onChange={handleFilterChange}
+            />
             <FormGroup>
-              {runningContainers?.map((container: Container) =>
+              {filteredContainers?.map((container: Container) =>
                 <Tooltip key={container.ID} title={container.getName()} placement="right">
                   <FormControlLabel
                     sx={{marginLeft: '-12px', marginRight: 0}}
