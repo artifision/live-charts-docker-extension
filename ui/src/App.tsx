@@ -1,18 +1,11 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {createDockerDesktopClient} from '@docker/extension-api-client';
 import {
-  Button,
-  ButtonGroup,
-  debounce,
-  Divider,
-  FormLabel,
-  Link,
-  Stack,
-  TextField,
-  Typography,
-  useTheme
+  Button, ButtonGroup, debounce, Divider, Fab, FormLabel, Link,
+  Stack, TextField, Typography, useTheme
 } from '@mui/material';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import AcUnitIcon from '@mui/icons-material/AcUnit';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
@@ -73,6 +66,7 @@ export function App() {
   const [charts, setCharts] = useState<Object[]>([]);
   const [maxChartsWarningShown, setMaxChartsWarningShown] = useState<boolean>(false);
   const [statsInterval, setStatsInterval] = useState<number>(1000);
+  const [frozen, setFrozen] = useState<boolean>(false);
   const [selectedGraphMergeOption, setSelectedGraphMergeOption] = useState<string>(graphMergeOptions[0].value);
   const [resizeStarted, setResizeStarted] = useState<boolean>(false);
   const [sidebarWidth, setSidebarWidth] = useState<number>(parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY)) || SIDEBAR_DEFAULT_WIDTH);
@@ -169,6 +163,10 @@ export function App() {
     const chartsMaker: ChartsMaker = new ChartsMaker;
     let chartsCount: number = 0;
 
+    if (frozen) {
+      return;
+    }
+
     if (!selectedContainers.hasContainers() || !selectedDevices) {
       setCharts([]);
       return;
@@ -231,7 +229,7 @@ export function App() {
     }
 
     setCharts(chartsMaker.getCharts());
-  }, [selectedDevices, selectedContainers, selectedGraphMergeOption, statsStack]);
+  }, [selectedDevices, selectedContainers, selectedGraphMergeOption, statsStack, frozen]);
 
   useEffect(() => {
     let consecutiveFailedReads: number = 0;
@@ -385,7 +383,6 @@ export function App() {
 
       <Stack direction="row">
         <Stack
-          spacing={4}
           sx={{
             width: sidebarWidth,
             flexShrink: 0,
@@ -396,7 +393,7 @@ export function App() {
             padding: 2,
           }}>
           <FormControl>
-            <Typography variant="h4">Graph Options:</Typography>
+            <Typography variant="h4">Types:</Typography>
             <Divider/>
             <RadioGroup>
               {graphMergeOptions.map(option => (
@@ -408,7 +405,16 @@ export function App() {
               ))}
             </RadioGroup>
           </FormControl>
-          <FormControl>
+          <Typography sx={{marginTop: 4}} variant="h4">Options:</Typography>
+          <Divider />
+          <Stack>
+            <Tooltip placement="right" title={frozen ? 'Unfreeze' : 'Freeze'}>
+              <Fab color={frozen ? 'error' : 'primary'} size="small" onClick={() => setFrozen(!frozen)}>
+                <AcUnitIcon/>
+              </Fab>
+            </Tooltip>
+          </Stack>
+          <FormControl sx={{marginTop: 4}}>
             <Typography variant="h4">Containers:</Typography>
             <Divider/>
             <TextField label="Filter (RegExp)" sx={{marginBottom: 1}} error={invalidFilter} helperText={invalidFilter ? 'Invalid RegExp' : ''}
