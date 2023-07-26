@@ -54,4 +54,11 @@ export default class ContainersCollection {
 
     return this;
   }
+
+  public clone(): ContainersCollection {
+    const collection = new ContainersCollection;
+    collection.containers = [...this.containers];
+
+    return collection;
+  }
 }

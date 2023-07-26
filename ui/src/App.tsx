@@ -1,6 +1,17 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {createDockerDesktopClient} from '@docker/extension-api-client';
-import {debounce, Divider, FormLabel, Link, Stack, TextField, Typography, useTheme} from '@mui/material';
+import {
+  Button,
+  ButtonGroup,
+  debounce,
+  Divider,
+  FormLabel,
+  Link,
+  Stack,
+  TextField,
+  Typography,
+  useTheme
+} from '@mui/material';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -41,7 +52,7 @@ const MAX_CONSECUTIVE_FAILED_READS: number = 20;
 const MAX_STACK_ITEMS: number = 60;
 const SIDEBAR_MIN_WIDTH = 170;
 const SIDEBAR_MAX_WIDTH = 500;
-const SIDEBAR_DEFAULT_WIDTH = 250;
+const SIDEBAR_DEFAULT_WIDTH = 223;
 const SIDEBAR_WIDTH_KEY = 'dlc_sidebar_width';
 const CONTAINERS_FILTER_KEY = 'dlc_containers_filter';
 
@@ -404,6 +415,11 @@ export function App() {
                        InputProps={{startAdornment: '/', endAdornment: '/'}} defaultValue={containersFilterDefaultValue}
                        onChange={handleFilterChange}
             />
+            <ButtonGroup variant="outlined" size="small" sx={{height: 25, marginBottom: 2}}>
+              <Button disabled>Select:</Button>
+              <Button onClick={() => setSelectedContainers(filteredContainers.clone())}>All</Button>
+              <Button onClick={() => setSelectedContainers(new ContainersCollection)}>None</Button>
+            </ButtonGroup>
             <FormGroup>
               {filteredContainers?.map((container: Container) =>
                 <Tooltip key={container.ID} title={container.getName()} placement="right">
