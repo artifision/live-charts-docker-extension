@@ -87,7 +87,7 @@ export default class ChartsMaker {
         <YAxis/>
         <Tooltip wrapperStyle={{zIndex: 1000}} content={<CustomTooltip chartData={chartData}/>}/>
         {chartData.getDotsSample().map((dot: ChartDot, index: number) => {
-          return <Area key={'dot-' + index} type="monotone" dataKey={'dot-' + index}
+          return <Area key={dot.getKey()} type="monotone" dataKey={dot.getKey()}
                        stroke={dot.getColor()} fill={dot.getColor()}
                        isAnimationActive={false} dot={false}/>
         })}
@@ -99,8 +99,8 @@ export default class ChartsMaker {
         <XAxis dataKey="time"/>
         <YAxis tickFormatter={(value: number): string => `${Math.abs(value)}`}/>
         <Tooltip wrapperStyle={{zIndex: 1000}} content={<CustomTooltip chartData={chartData}/>}/>
-        {chartData.getDotsSample().map((dot: ChartDot, index: number) => {
-          return <Area key={'dot-' + index} type="monotone" dataKey={'dot-' + index}
+        {chartData.getDotsSample().map((dot: ChartDot) => {
+          return <Area key={dot.getKey()} type="monotone" dataKey={dot.getKey()}
                        stroke={dot.getColor()} fill={dot.getColor()}
                        isAnimationActive={false} dot={false}/>
         })}
@@ -126,7 +126,7 @@ export default class ChartsMaker {
         <YAxis/>
         <Tooltip wrapperStyle={{zIndex: 1000}} content={<CustomTooltip chartData={chartData}/>}/>
         {chartData.getDotsSample().map((dot: ChartDot, index: number) => {
-          return <Line key={'dot-' + index} type="monotone" dataKey={'dot-' + index}
+          return <Line key={dot.getKey()} type="monotone" dataKey={dot.getKey()}
                        stroke={dot.getColor()} fill={dot.getColor()}
                        isAnimationActive={false} dot={false}/>
         })}
@@ -138,7 +138,7 @@ export default class ChartsMaker {
         <YAxis tickFormatter={(value: number): string => `${Math.abs(value)}`}/>
         <Tooltip wrapperStyle={{zIndex: 1000}} content={<CustomTooltip chartData={chartData}/>}/>
         {chartData.getDotsSample().map((dot: ChartDot, index: number) => {
-          return <Line key={'dot-' + index} type="monotone" dataKey={'dot-' + index}
+          return <Line key={dot.getKey()} type="monotone" dataKey={dot.getKey()}
                        stroke={dot.getColor()} fill={dot.getColor()}
                        isAnimationActive={false} dot={false}/>
         })}

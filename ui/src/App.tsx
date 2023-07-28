@@ -6,6 +6,8 @@ import {
 } from '@mui/material';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
@@ -26,6 +28,7 @@ import StatsStack from "./classes/StatsStack";
 import ChartsMaker from "./ChartsMaker";
 import ChartItem from "./classes/ChartItem";
 import ChartData from "./classes/ChartData";
+import Colors from "./classes/Colors";
 
 const devices: Device[] = [
   new Device('CPU', 'cpu', '%', blue[400]),
@@ -43,11 +46,12 @@ const graphMergeOptions = [
 const MAX_CHARTS: number = 12;
 const MAX_CONSECUTIVE_FAILED_READS: number = 20;
 const MAX_STACK_ITEMS: number = 60;
-const SIDEBAR_MIN_WIDTH = 170;
-const SIDEBAR_MAX_WIDTH = 500;
-const SIDEBAR_DEFAULT_WIDTH = 223;
-const SIDEBAR_WIDTH_KEY = 'dlc_sidebar_width';
-const CONTAINERS_FILTER_KEY = 'dlc_containers_filter';
+const SIDEBAR_MIN_WIDTH: number = 170;
+const SIDEBAR_MAX_WIDTH: number = 500;
+const SIDEBAR_DEFAULT_WIDTH: number = 223;
+const SIDEBAR_WIDTH_KEY: string = 'dlc_sidebar_width';
+const CONTAINERS_FILTER_KEY: string = 'dlc_containers_filter';
+const colors: Colors = new Colors;
 
 // Note: This line relies on Docker Desktop's presence as a host application.
 // If you're running this React app in a browser, it won't work properly.
@@ -67,15 +71,18 @@ export function App() {
   const [maxChartsWarningShown, setMaxChartsWarningShown] = useState<boolean>(false);
   const [statsInterval, setStatsInterval] = useState<number>(1000);
   const [frozen, setFrozen] = useState<boolean>(false);
+  const [colorized, setColorized] = useState<boolean>(false);
   const [selectedGraphMergeOption, setSelectedGraphMergeOption] = useState<string>(graphMergeOptions[0].value);
   const [resizeStarted, setResizeStarted] = useState<boolean>(false);
-  const [sidebarWidth, setSidebarWidth] = useState<number>(parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY)) || SIDEBAR_DEFAULT_WIDTH);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY) || '') || SIDEBAR_DEFAULT_WIDTH);
   const containersFilterDefaultValue = localStorage.getItem(CONTAINERS_FILTER_KEY) || '';
   const [containersFilter, setContainersFilter] = useState<string>(containersFilterDefaultValue);
   const [invalidFilter, setInvalidFilter] = useState<boolean>(false);
   const currentStatsRawRef = useRef<RawContainerStats[]>();
   const ddClient = useDockerDesktopClient();
   const theme = useTheme();
+
+  colors.setUseLightPalette(theme.palette.mode === 'dark');
 
   useEffect(() => {
     identifyRunningContainers();
@@ -84,10 +91,13 @@ export function App() {
   const identifyRunningContainers = () => {
     ddClient.docker.cli.exec('ps', ['--format', '"{{json .}}"']).then((result) => {
       const runningContainers = new ContainersCollection;
-      result.parseJsonLines().map((line) => {
-        runningContainers.addContainer(new Container(line.ID, line.Names));
+      colors.reset();
+      result.parseJsonLines()
+        .sort((a: any, b: any) => a.Names.localeCompare(b.Names))
+        .map((line) => {
+        runningContainers.addContainer(new Container(line.ID, line.Names, colors.pop()));
       });
-      runningContainers.orderByName();
+
       setRunningContainers(runningContainers);
     });
   }
@@ -173,6 +183,10 @@ export function App() {
     }
     let chartsLimitReached: boolean = false;
 
+    selectedDevices.forEach((selectedDevice: Device): void => {
+      selectedDevice.setUseContainerColor(colorized);
+    });
+
     if (selectedGraphMergeOption === 'split') {
       selectedDevices.forEach((selectedDevice: Device) => {
         selectedContainers.forEach((selectedContainer: Container) => {
@@ -229,7 +243,7 @@ export function App() {
     }
 
     setCharts(chartsMaker.getCharts());
-  }, [selectedDevices, selectedContainers, selectedGraphMergeOption, statsStack, frozen]);
+  }, [selectedDevices, selectedContainers, selectedGraphMergeOption, statsStack, frozen, colorized]);
 
   useEffect(() => {
     let consecutiveFailedReads: number = 0;
@@ -329,6 +343,18 @@ export function App() {
     localStorage.setItem(CONTAINERS_FILTER_KEY, event.target.value);
   }, 1000);
 
+  const shuffleColors = () => {
+    colors.reset().shuffle();
+
+    setRunningContainers((runningContainers: ContainersCollection) => {
+      runningContainers.getContainers().map((container: Container) => {
+        container.setColor(colors.pop());
+      });
+
+      return runningContainers;
+    });
+  }
+
   return (
     <Stack spacing={1}
            onMouseUp={() => setResizeStarted(false)}
@@ -407,12 +433,27 @@ export function App() {
           </FormControl>
           <Typography sx={{marginTop: 4}} variant="h4">Options:</Typography>
           <Divider />
-          <Stack>
+          <Stack direction="row" spacing={1}>
             <Tooltip placement="right" title={frozen ? 'Unfreeze' : 'Freeze'}>
               <Fab color={frozen ? 'error' : 'primary'} size="small" onClick={() => setFrozen(!frozen)}>
                 <AcUnitIcon/>
               </Fab>
             </Tooltip>
+            {selectedGraphMergeOption !== 'overview' &&
+              <>
+                <Tooltip placement="right" title={colorized ? 'Remove Containers Colors' : 'Colorize Containers'}>
+                  <Fab color={colorized ? 'warning' : 'primary'} size="small" onClick={() => setColorized(!colorized)}>
+                    <ColorLensIcon/>
+                  </Fab>
+                </Tooltip>
+                {colorized && <Tooltip placement="right" title="Shuffle Colors">
+                  <Fab color="success" size="small" onClick={shuffleColors}>
+                    <ShuffleIcon/>
+                  </Fab>
+                </Tooltip>
+                }
+              </>
+            }
           </Stack>
           <FormControl sx={{marginTop: 4}}>
             <Typography variant="h4">Containers:</Typography>
@@ -428,17 +469,19 @@ export function App() {
             </ButtonGroup>
             <FormGroup>
               {filteredContainers?.map((container: Container) =>
-                <Tooltip key={container.ID} title={container.getName()} placement="right">
+                <Tooltip key={container.getID()} title={container.getName()} placement="right">
                   <FormControlLabel
                     sx={{marginLeft: '-12px', marginRight: 0}}
-                    value={container.ID}
+                    value={container.getID()}
                     control={<Switch checked={selectedContainers.containsContainer(container)} size="small"/>}
                     label={<Typography
                     sx={{
                       width: sidebarWidth - 80,
+                      fontWeight: 'bold',
                       textOverflow: 'ellipsis',
                       overflow: 'hidden',
                       whiteSpace: 'nowrap',
+                      color: colorized && selectedGraphMergeOption !== 'overview' ? container.getColor() : 'inherit',
                     }}
                     >{container.getName()}</Typography>}
                     onChange={handleContainerSelectChange}

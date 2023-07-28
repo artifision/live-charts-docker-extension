@@ -25,7 +25,7 @@ export default class ContainersCollection {
   }
 
   public getContainerById = (ID: string): Container => {
-    const container = this.containers.find((container: Container) => container.ID === ID);
+    const container = this.containers.find((container: Container) => container.getID() === ID);
     if (!container) {
       throw new Error(`Container ${ID} not found`);
     }
@@ -44,7 +44,7 @@ export default class ContainersCollection {
   }
 
   public removeContainerByID(ID: string): ContainersCollection {
-    this.containers = this.containers.filter((container: Container) => container.ID !== ID);
+    this.containers = this.containers.filter((container: Container) => container.getID() !== ID);
 
     return this;
   }

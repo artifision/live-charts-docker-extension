@@ -14,7 +14,7 @@ export default class ChartData {
       };
 
       item.getDots().forEach((dot: ChartDot, index: number): void => {
-        data[`dot-${index}`] = dot.getValue();
+        data[dot.getKey()] = dot.getValue();
       });
 
       return data;

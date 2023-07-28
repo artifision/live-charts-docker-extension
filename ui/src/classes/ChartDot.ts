@@ -20,6 +20,8 @@ export default class ChartDot {
   public isDefault = (): boolean => !this.read && !this.write;
   public hasWriteSibling = (): boolean => this.read && !this.write;
 
+  public getKey = (): string => this.name + (this.write ? "w" : "r") + (this.read ? "r" : "w");
+
   protected round = (value: number): number => {
     return Math.round((value + Number.EPSILON) * 100) / 100;
   }

@@ -6,6 +6,8 @@ import ContainersCollection from "./ContainersCollection";
 import Container from "./Container";
 
 export default class Device {
+  protected useContainerColors: boolean = false;
+
   public constructor(
     protected name: string,
     protected key: string,
@@ -30,12 +32,16 @@ export default class Device {
     return this.name;
   }
 
+  public setUseContainerColor = (use: boolean): void => {
+    this.useContainerColors = use;
+  };
+
   protected makeChartDots = (containerStats: ContainerStats): ChartDot[] => {
     if (this.isCpu() || this.isMemory()) {
       return [new ChartDot(
         this,
         containerStats.getContainer().getName(),
-        this.getColor(),
+        this.useContainerColors ? containerStats.getContainer().getColor() : this.getColor(),
         this.key === 'cpu' ? containerStats.cpu_percent : this.convertFromBytesToSelectedUnit(containerStats.memory_usage)
       )];
     }
@@ -49,7 +55,7 @@ export default class Device {
       dots.push(new ChartDot(
         this,
         containerStats.getContainer().getName(),
-        this.getColor(),
+        this.useContainerColors ? containerStats.getContainer().getColor() : this.getColor(),
         value_read,
         true
       ));
@@ -61,7 +67,7 @@ export default class Device {
       dots.push(new ChartDot(
         this,
         containerStats.getContainer().getName(),
-        this.getColor(),
+        this.useContainerColors ? containerStats.getContainer().getColor() : this.getColor(),
         value_write,
         false,
         true
