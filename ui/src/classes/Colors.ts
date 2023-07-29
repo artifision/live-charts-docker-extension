@@ -10,7 +10,8 @@ export default class Colors {
     '#a6d4fa',
     '#f2aeae',
     '#2196f3',
-    '#ffac33',
+    '#ffb74d',
+    '#4db6ac',
     '#e040fb',
     '#ffd699',
     '#536dfe',
@@ -18,11 +19,9 @@ export default class Colors {
     '#4caf50',
     '#f44336',
     '#b7deb8',
-    '#b2ff59',
     '#4dabf5',
     '#18ffff',
     '#9fa8da',
-    '#76ff03',
     '#ea80fc',
   ];
 
