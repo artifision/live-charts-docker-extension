@@ -8,6 +8,8 @@ import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
+import ToggleOnIcon from '@mui/icons-material/ToggleOn';
+import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
@@ -462,11 +464,16 @@ export function App() {
                        InputProps={{startAdornment: '/', endAdornment: '/'}} defaultValue={containersFilterDefaultValue}
                        onChange={handleFilterChange}
             />
-            <ButtonGroup variant="outlined" size="small" sx={{height: 25, marginBottom: 2}}>
-              <Button disabled>Select:</Button>
-              <Button onClick={() => setSelectedContainers(filteredContainers.clone())}>All</Button>
-              <Button onClick={() => setSelectedContainers(new ContainersCollection)}>None</Button>
-            </ButtonGroup>
+            <Box sx={{marginBottom: 2}}>
+                <ButtonGroup variant="outlined" size="small" sx={{height: 25}}>
+                  <Tooltip title="Deselect all containers" placement="right" enterDelay={1000}>
+                    <Button onClick={() => setSelectedContainers(new ContainersCollection)}><ToggleOffIcon/></Button>
+                  </Tooltip>
+                  <Tooltip title="Select all containers" placement="right" enterDelay={1000}>
+                    <Button onClick={() => setSelectedContainers(filteredContainers.clone())}><ToggleOnIcon/></Button>
+                  </Tooltip>
+                </ButtonGroup>
+            </Box>
             <FormGroup>
               {filteredContainers?.map((container: Container) =>
                 <Tooltip key={container.getID()} title={container.getName()} placement="right">
