@@ -10,6 +10,7 @@ import ColorLensIcon from '@mui/icons-material/ColorLens';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ToggleOffIcon from '@mui/icons-material/ToggleOff';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
@@ -18,7 +19,7 @@ import Radio from '@mui/material/Radio';
 import Tooltip from '@mui/material/Tooltip';
 import RadioGroup from '@mui/material/RadioGroup';
 import Box from '@mui/material/Box';
-import {blue, teal, deepPurple, lime, blueGrey} from '@mui/material/colors';
+import {blue, teal, deepPurple, lime, blueGrey, pink} from '@mui/material/colors';
 
 import Device from "./classes/Device";
 import RawContainerStats from "./interfaces/RawContainerStats";
@@ -380,7 +381,8 @@ export function App() {
         <Stack alignItems="center">
           <Typography variant="h3">Live Charts</Typography>
           <Typography variant="body2">
-            by <Link href="#" onClick={() => ddClient.host.openExternal('https://artifision.com')}>Artifision</Link>
+            by <Link href="#" sx={{textDecoration: 'none'}}
+                     onClick={() => ddClient.host.openExternal('https://artifision.com')}>Artifision</Link>
           </Typography>
         </Stack>
         <Stack direction="row">
@@ -402,8 +404,13 @@ export function App() {
           </FormControl>
           <Divider orientation="vertical" variant="middle" flexItem/>
         </Stack>
-        <Stack>
-          <Link href="#" onClick={() => ddClient.host.openExternal("https://forms.gle/LVQEgXfVuB3mgHDKA")}>
+        <Stack alignItems="end">
+          <Link href="#" sx={{color: pink[300], '&:hover': {color: pink[200]}, textDecoration: 'none'}}
+                onClick={() => ddClient.host.openExternal("https://github.com/sponsors/artifision")}>
+            Sponsor <FavoriteIcon/>
+          </Link>
+          <Link href="#" sx={{textDecoration: 'none'}}
+                onClick={() => ddClient.host.openExternal("https://forms.gle/LVQEgXfVuB3mgHDKA")}>
             Give Feedback <QuestionAnswerIcon />
           </Link>
         </Stack>

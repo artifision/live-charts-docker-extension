@@ -2,6 +2,8 @@
 
 Live Charts provides real-time visualization of critical system metrics. With Live Charts, you can effortlessly monitor and track the current usage of CPU, Memory, Disk, and Network resources within your Docker containers. The extension offers intuitive and interactive charts that dynamically update to reflect the most recent data, enabling you to make informed decisions and optimize your containerized environment. Stay on top of your system's performance with Live Charts and gain valuable insights into resource utilization, empowering you to efficiently manage your Docker infrastructure.
 
+![Live Charts](https://raw.githubusercontent.com/artifision/live-charts-docker-extension/main/ui/public/screenshot_1.png)
+
 ## Local development
 
 You can use `docker` to build, install and push your extension. Also, we provide an opinionated [Makefile](Makefile) that could be convenient for you. There isn't a strong preference of using one over the other, so just use the one you're most comfortable with.
