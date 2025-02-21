@@ -1,4 +1,5 @@
 import React, {useEffect, useState, useRef} from 'react';
+import stripAnsi from 'strip-ansi';
 import {createDockerDesktopClient} from '@docker/extension-api-client';
 import {
   Button, ButtonGroup, debounce, Divider, Fab, FormLabel, Link,
@@ -254,7 +255,11 @@ export function App() {
       stream: {
         onOutput(data) {
           if (data.stdout) {
-            const lines: string[] = data.stdout.toString().trim().split('\n');
+            const lines: string[] = stripAnsi(data.stdout.toString())
+              .trim()
+              .split('\n')
+              .filter(line => line.trim() !== '');
+
             let rawParsedData = null;
             try {
               rawParsedData = lines.map((line: string) => JSON.parse(line));
@@ -270,6 +275,7 @@ export function App() {
             }
 
             if (rawParsedData && rawParsedData.length > 0) {
+              rawParsedData = rawParsedData.filter((v, i, a) => a.findIndex(t => (t.ID === v.ID)) === i);
               currentStatsRawRef.current = rawParsedData;
             }
           } else {

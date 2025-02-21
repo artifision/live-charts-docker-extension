@@ -1,5 +1,5 @@
 IMAGE?=artifision/live-charts-docker-extension
-TAG?=latest
+TAG?=1.2.1
 
 BUILDER=buildx-multi-arch
 
@@ -14,6 +14,9 @@ install-extension: build-extension ## Install the extension
 
 update-extension: build-extension ## Update the extension
 	docker extension update $(IMAGE):$(TAG)
+
+remove-extension: ## Remove the extension
+	docker extension rm $(IMAGE):$(TAG)
 
 prepare-buildx: ## Create buildx builder for multi-arch build, if not exists
 	docker buildx inspect $(BUILDER) || docker buildx create --name=$(BUILDER) --driver=docker-container --driver-opt=network=host
